@@ -75,13 +75,12 @@ public class Turret extends GameObject implements IMouseReliant {
 				this.targetDegrees = -180;
 			}
 		}
+//		this.degrees = getAngle(GameEngine.getInstance().getMouseLocation());
 		if (this.degrees != this.targetDegrees) {
-//			System.out.println(Math.abs(this.degrees - this.targetDegrees));
 			if (Math.abs(this.degrees - this.targetDegrees) < 2) {
 				this.degrees = this.targetDegrees;
 			} else {
-//				if (this.targetDegrees - this.degrees > 0) {
-				if (this.movePositive2(degrees, targetDegrees)) {
+				if (this.movePositive(degrees, targetDegrees)) {
 //					this.degrees++;
 					this.degrees += 1.5;
 				} else {
@@ -97,10 +96,7 @@ public class Turret extends GameObject implements IMouseReliant {
 			}
 		}
 		this.targetLocked = this.targetDegrees == this.degrees;
-//		System.err.println("td:" + this.targetDegrees);
-//		System.err.println(" d:" + this.degrees);
 		
-//		this.degrees = getAngle(GameEngine.getInstance().getMouseLocation());
 		this.rotatePoints();
 		this.firingVector = new Vector(3000, Math.toRadians(degrees));
 		
@@ -122,7 +118,7 @@ public class Turret extends GameObject implements IMouseReliant {
 	
 	@Override
 	public boolean onMouseEvent(MouseEvent e) {
-//		GameEngine.sapwnProjectile(new Projectile(Math.toRadians(degrees), new Point2D.Double(this.centerX, this.centerY)));
+//		this.fire();
 		return false;
 	}
 	
@@ -136,18 +132,7 @@ public class Turret extends GameObject implements IMouseReliant {
 	}
 	
 	private boolean movePositive(double a, double b) {
-//		a += 180;
-//		b += 180;
-		b -= a;
-		return 0 < b;
-	}
-	
-	private boolean movePositive2(double a, double b) {
-		if ((b - a + 360) % 360 < 180) {
-			return true;
-		} else {
-			return false;
-		}
+		return (b - a + 360) % 360 < 180;
 	}
 	
 	private double getAngle(Point target) {
