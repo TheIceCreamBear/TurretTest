@@ -111,10 +111,10 @@ public class Turret extends GameObject implements IMouseReliant {
 				this.fire();
 				if (this.burstLeft > 0) {
 					this.burstLeft--;
-					this.fireCounter = 1;
+					this.fireCounter = 15;
 				} else if (this.burstLeft == 0) {
 					this.burstLeft = 3;
-					this.fireCounter = 1;
+					this.fireCounter = 120;
 				}
 			}
 		}
