@@ -19,6 +19,7 @@ import javax.swing.JFrame;
 import com.joseph.gametemplate.gameobject.GameObject;
 import com.joseph.gametemplate.gameobject.Projectile;
 import com.joseph.gametemplate.gameobject.RenderLockObject;
+import com.joseph.gametemplate.gameobject.Ship;
 import com.joseph.gametemplate.gameobject.TestTarget;
 import com.joseph.gametemplate.gameobject.Turret;
 import com.joseph.gametemplate.gui.IGuiElement;
@@ -204,41 +205,45 @@ public class GameEngine {
 		
 		this.frc = this.g2.getFontRenderContext();
 		
-		Turret t = new Turret();
-		gameObjects.add(t);
-		this.mouseHandlerInstace.registerMouseReliant(t);
+//		Turret t = new Turret();
+//		gameObjects.add(t);
+//		this.mouseHandlerInstace.registerMouseReliant(t);
+//		
+//		t = new Turret(100, 100);
+//		gameObjects.add(t);
+//		this.mouseHandlerInstace.registerMouseReliant(t);
+//		
+//		t = new Turret(3500, 2000);
+//		gameObjects.add(t);
+//		this.mouseHandlerInstace.registerMouseReliant(t);
+//		
+//		TestTarget tt = new TestTarget();
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		this.mouseHandlerInstace.registerWaypointListener(tt);
+//		
+//		tt = new TestTarget(300, 2000);
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		this.mouseHandlerInstace.registerWaypointListener(tt);
+//		
+//		tt = new TestTarget(1500, 1000);
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		this.mouseHandlerInstace.registerWaypointListener(tt);
+//		
+//		Random r = new Random();
+//		int num = r.nextInt(20) + 80;
+//		for (int i = 0; i < num; i++) {
+//			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
+//			gameObjects.add(tt);
+//			targets.add(tt);
+//			this.mouseHandlerInstace.registerWaypointListener(tt);
+//		}
 		
-		t = new Turret(100, 100);
-		gameObjects.add(t);
-		this.mouseHandlerInstace.registerMouseReliant(t);
-		
-		t = new Turret(3500, 2000);
-		gameObjects.add(t);
-		this.mouseHandlerInstace.registerMouseReliant(t);
-		
-		TestTarget tt = new TestTarget();
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
-		
-		tt = new TestTarget(300, 2000);
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
-		
-		tt = new TestTarget(1500, 1000);
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
-		
-		Random r = new Random();
-		int num = r.nextInt(20) + 80;
-		for (int i = 0; i < num; i++) {
-			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
-			gameObjects.add(tt);
-			targets.add(tt);
-			this.mouseHandlerInstace.registerWaypointListener(tt);
-		}
+		Ship s = new Ship(1000, 1000);
+		gameObjects.add(s);
+		this.mouseHandlerInstace.registerWaypointListener(s);
 		
 		this.releaseFocous();
 		

@@ -25,7 +25,6 @@ public class Turret extends GameObject implements IMouseReliant {
 	private Vector firingVector;
 	private double targetDegrees;
 	private double degrees;
-	private boolean targetLocked;
 	private int fireCounter;
 	private int burstLeft;
 	
@@ -51,7 +50,6 @@ public class Turret extends GameObject implements IMouseReliant {
 	@Override
 	public void draw(Graphics2D g, ImageObserver observer) {
 		g.setColor(Color.white);
-//		g.draw(getTranslatedShape(500, 500));
 		g.drawPolygon(makePoly(drawPoints));
 		g.setColor(Color.red);
 		g.fillRect((int) this.x, (int) this.y, 1, 1);
@@ -95,7 +93,7 @@ public class Turret extends GameObject implements IMouseReliant {
 				}
 			}
 		}
-		this.targetLocked = this.targetDegrees == this.degrees;
+		boolean targetLocked = this.targetDegrees == this.degrees;
 		
 		this.rotatePoints();
 		this.firingVector = new Vector(3000, Math.toRadians(degrees));
