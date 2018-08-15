@@ -12,6 +12,7 @@ import java.awt.image.ImageObserver;
 import com.joseph.gametemplate.engine.GameEngine;
 import com.joseph.gametemplate.interfaces.IMouseReliant;
 import com.joseph.gametemplate.math.DPoint;
+import com.joseph.gametemplate.math.MathHelper;
 import com.joseph.gametemplate.math.physics.Vector;
 import com.joseph.gametemplate.reference.Reference;
 import com.joseph.gametemplate.reference.ScreenReference;
@@ -23,7 +24,11 @@ public class Turret extends GameObject implements IMouseReliant {
 	private GameObject target;
 	private Vector movementVector;
 	private Vector firingVector;
+	private Vector visualFiringVector;
 	private double targetDegrees;
+	private double targetDegreesWithLead;
+	private double previousDegWithLead;
+	private double lead;
 	private double degrees;
 	private int fireCounter;
 	private int burstLeft;
@@ -42,9 +47,9 @@ public class Turret extends GameObject implements IMouseReliant {
 		}
 		this.fireCounter = 200;
 		this.burstLeft = 3;
-		this.firingVector = new Vector(3000, 0);
+		this.visualFiringVector = new Vector(3000, 0);
 		this.movementVector = new Vector(0, 0);
-		this.degrees = -135;
+		this.degrees = 0;
 	}
 	
 	@Override
@@ -54,10 +59,10 @@ public class Turret extends GameObject implements IMouseReliant {
 		g.setColor(Color.red);
 		g.fillRect((int) this.x, (int) this.y, 1, 1);
 		if (Reference.DEBUG_MODE) {
-			g.drawLine((int) x, (int) y, (int) (x + firingVector.getI()), (int) (y + firingVector.getJ()));
+			g.drawLine((int) x, (int) y, (int) (x + visualFiringVector.getI()), (int) (y + visualFiringVector.getJ()));
 			g.setColor(Color.green);
 			g.drawString("" + this.degrees, (int) x, (int) y);
-			g.drawString("" + this.targetDegrees, (int) x, (int) y + ScreenReference.charHeight);
+			g.drawString("" + this.targetDegreesWithLead, (int) x, (int) y + ScreenReference.charHeight);
 			
 		}
 	}
@@ -67,18 +72,28 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.x += movementVector.getI();
 		this.y += movementVector.getJ();
 		this.target = GameEngine.getClosestTarget(getLocation());
-		if (this.target != null) {
+		if (this.target != null && this.target instanceof TestTarget) {
+			TestTarget tt = (TestTarget) this.target;
 			this.targetDegrees = getAngle(target.getLocation());
-			if (this.targetDegrees == 180 && this.degrees < 0) {
-				this.targetDegrees = -180;
+			if (tt.getMovementVector().getMagnitude() != 0) {
+				this.lead = this.getLead(tt);
+				this.targetDegreesWithLead = this.targetDegrees + this.lead;
+//				this.targetDegrees = getAngle((TestTarget) this.target);
+			} else {
+				this.targetDegreesWithLead = this.targetDegrees;
+			}
+			System.err.println(this.targetDegreesWithLead - this.previousDegWithLead);
+			
+			if (this.targetDegreesWithLead == 180 && this.degrees < 0) {
+				this.targetDegreesWithLead = -180;
 			}
 		}
 //		this.degrees = getAngle(GameEngine.getInstance().getMouseLocation());
-		if (this.degrees != this.targetDegrees) {
-			if (Math.abs(this.degrees - this.targetDegrees) < 2) {
-				this.degrees = this.targetDegrees;
+		if (this.degrees != this.targetDegreesWithLead) {
+			if (Math.abs(this.degrees - this.targetDegreesWithLead) < 2.5) {
+				this.degrees = this.targetDegreesWithLead;
 			} else {
-				if (this.movePositive(degrees, targetDegrees)) {
+				if (this.movePositive(degrees, targetDegreesWithLead)) {
 //					this.degrees++;
 					this.degrees += 1.5;
 				} else {
@@ -93,10 +108,10 @@ public class Turret extends GameObject implements IMouseReliant {
 				}
 			}
 		}
-		boolean targetLocked = this.targetDegrees == this.degrees;
+		boolean targetLocked = this.targetDegreesWithLead == this.degrees;
 		
 		this.rotatePoints();
-		this.firingVector = new Vector(3000, Math.toRadians(degrees));
+		this.visualFiringVector = new Vector(3000, Math.toRadians(degrees));
 		
 		if (this.fireCounter > 0) {
 			this.fireCounter--;
@@ -112,6 +127,7 @@ public class Turret extends GameObject implements IMouseReliant {
 				}
 			}
 		}
+		this.previousDegWithLead = this.targetDegreesWithLead;
 	}
 	
 	@Override
@@ -122,7 +138,7 @@ public class Turret extends GameObject implements IMouseReliant {
 	
 	public void setTarget(GameObject obj) {
 		this.target = obj;
-		this.targetDegrees = this.getAngle(obj.getLocation());
+		this.targetDegreesWithLead = this.getAngle(obj.getLocation());
 	}
 	
 	public void setMovementVector(Vector movementVector) {
@@ -130,6 +146,8 @@ public class Turret extends GameObject implements IMouseReliant {
 	}
 	
 	private boolean movePositive(double a, double b) {
+		b += 180;
+		a += 180;
 		return (b - a + 360) % 360 < 180;
 	}
 	
@@ -139,6 +157,52 @@ public class Turret extends GameObject implements IMouseReliant {
 		}
 		
 		return Math.toDegrees(Math.atan2(target.y - this.y, target.x - this.x));
+	}
+	
+	private double getLead(TestTarget t) {
+		Vector projectileCurrent = new Vector(Projectile.PROJECTILE_MAGNITUDE, Math.toDegrees(this.targetDegrees));
+		double dotProd = projectileCurrent.dotProduct(t.getMovementVector());
+		double thetaDeg = Math.toDegrees(Math.atan(dotProd) / (projectileCurrent.getMagnitude() * t.getMovementVector().getMagnitude()));
+		return thetaDeg;
+	}
+	
+	private double getAngle(TestTarget t) {
+		Vector tVel = t.getMovementVector();
+		DPoint tPos = t.getLocation();
+		
+		double a = MathHelper.square(tVel.getI()) + MathHelper.square(tVel.getJ()) - MathHelper.square(Projectile.PROJECTILE_MAGNITUDE);
+		double b = 2 * (tVel.getI() * (tPos.getX() - this.x) + tVel.getJ() * (tPos.getY() - this.y));
+		double c = MathHelper.square(tPos.getX() - this.x) + MathHelper.square(tPos.getY() - this.y);
+		
+		double disc = MathHelper.square(b) - 4 * a * c;
+		
+		if (disc < 0) {
+			return targetDegreesWithLead; // no change
+		}
+		
+		double possilbe1 = (-b + Math.sqrt(disc)) / (2 * a);
+		double possilbe2 = (-b - Math.sqrt(disc)) / (2 * a);
+
+		if (disc == 0) {
+			// Both Are Same
+			double i = possilbe1 * tVel.getI() + tPos.getX();
+			double j = possilbe1 * tVel.getJ() + tPos.getY();
+			return Math.toDegrees(Math.atan(j / i));
+		}
+		
+		if (possilbe1 < possilbe2 && possilbe1 > 0) {
+			double i = possilbe1 * tVel.getI() + tPos.getX();
+			double j = possilbe1 * tVel.getJ() + tPos.getY();
+			return Math.toDegrees(Math.atan(j / i));
+		} else {
+			if (possilbe2 > 0) {
+				double i = possilbe2 * tVel.getI() + tPos.getX();
+				double j = possilbe2 * tVel.getJ() + tPos.getY();
+				return Math.toDegrees(Math.atan(j / i));
+			}
+		}
+		
+		return targetDegreesWithLead;
 	}
 	
 	private double getAngle(DPoint target) {

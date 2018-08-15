@@ -1,12 +1,16 @@
 package com.joseph.gametemplate.math;
 
 public class MathHelper {
+	public static double square(double a) {
+		return a * a;
+	}
+	
 	public static double getDistanceSqrd(DPoint dp1, DPoint dp2) {
 		return getDistanceSqrd(dp1.getX(), dp1.getY(), dp2.getX(), dp2.getY());
 	}
 	
 	public static double getDistanceSqrd(double x1, double y1, double x2, double y2) {
-		return Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2);
+		return square(x2 - x1) + square(y2 - y1);
 	}
 	
 	public static double getDistance(DPoint dp1, DPoint dp2) {

@@ -1,5 +1,7 @@
 package com.joseph.gametemplate.math.physics;
 
+import com.joseph.gametemplate.math.MathHelper;
+
 public class Vector {
 	private double magnitude;
 	private double angle;
@@ -11,6 +13,13 @@ public class Vector {
 		this.angle = angle;
 		this.i = this.magnitude * Math.cos(this.angle);
 		this.j = this.magnitude * Math.sin(this.angle);
+	}
+	
+	public Vector(double i, double j, boolean nil) {
+		this.i = i;
+		this.j = j;
+		this.magnitude = Math.sqrt(MathHelper.square(this.i) + MathHelper.square(this.j));
+		this.angle = Math.atan(this.j / this.i);
 	}
 	
 	private Vector(Vector v1, Vector v2, boolean add) {
@@ -41,6 +50,10 @@ public class Vector {
 	
 	public double getMagnitude() {
 		return this.magnitude;
+	}
+	
+	public double dotProduct(Vector other) {
+		return i * other.i + j * other.j;
 	}
 	
 	/**

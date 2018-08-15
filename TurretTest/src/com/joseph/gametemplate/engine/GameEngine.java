@@ -11,7 +11,6 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.Queue;
-import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import javax.swing.JFrame;
@@ -19,7 +18,6 @@ import javax.swing.JFrame;
 import com.joseph.gametemplate.gameobject.GameObject;
 import com.joseph.gametemplate.gameobject.Projectile;
 import com.joseph.gametemplate.gameobject.RenderLockObject;
-import com.joseph.gametemplate.gameobject.Ship;
 import com.joseph.gametemplate.gameobject.TestTarget;
 import com.joseph.gametemplate.gameobject.Turret;
 import com.joseph.gametemplate.gui.IGuiElement;
@@ -120,6 +118,9 @@ public class GameEngine {
 	
 	private static Queue<Projectile> waitingAddProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
 	private static Queue<Projectile> waitingRemoveProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
+	
+	private int updateCounter;
+	private int drawCounter;
 
 	/**
 	 * 
@@ -205,10 +206,10 @@ public class GameEngine {
 		
 		this.frc = this.g2.getFontRenderContext();
 		
-//		Turret t = new Turret();
-//		gameObjects.add(t);
-//		this.mouseHandlerInstace.registerMouseReliant(t);
-//		
+		Turret t = new Turret();
+		gameObjects.add(t);
+		this.mouseHandlerInstace.registerMouseReliant(t);
+		
 //		t = new Turret(100, 100);
 //		gameObjects.add(t);
 //		this.mouseHandlerInstace.registerMouseReliant(t);
@@ -216,22 +217,22 @@ public class GameEngine {
 //		t = new Turret(3500, 2000);
 //		gameObjects.add(t);
 //		this.mouseHandlerInstace.registerMouseReliant(t);
-//		
-//		TestTarget tt = new TestTarget();
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		this.mouseHandlerInstace.registerWaypointListener(tt);
-//		
-//		tt = new TestTarget(300, 2000);
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		this.mouseHandlerInstace.registerWaypointListener(tt);
-//		
-//		tt = new TestTarget(1500, 1000);
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		this.mouseHandlerInstace.registerWaypointListener(tt);
-//		
+		
+		TestTarget tt = new TestTarget();
+		gameObjects.add(tt);
+		targets.add(tt);
+		this.mouseHandlerInstace.registerWaypointListener(tt);
+		
+		tt = new TestTarget(300, 2000);
+		gameObjects.add(tt);
+		targets.add(tt);
+		this.mouseHandlerInstace.registerWaypointListener(tt);
+		
+		tt = new TestTarget(1500, 1000);
+		gameObjects.add(tt);
+		targets.add(tt);
+		this.mouseHandlerInstace.registerWaypointListener(tt);
+		
 //		Random r = new Random();
 //		int num = r.nextInt(20) + 80;
 //		for (int i = 0; i < num; i++) {
@@ -241,9 +242,9 @@ public class GameEngine {
 //			this.mouseHandlerInstace.registerWaypointListener(tt);
 //		}
 		
-		Ship s = new Ship(1000, 1000);
-		gameObjects.add(s);
-		this.mouseHandlerInstace.registerWaypointListener(s);
+//		Ship s = new Ship(1000, 1000);
+//		gameObjects.add(s);
+//		this.mouseHandlerInstace.registerWaypointListener(s);
 		
 		this.releaseFocous();
 		
@@ -258,6 +259,7 @@ public class GameEngine {
 	 *            update methods of each object)
 	 */
 	private void update(double deltaTime) {
+		long start = System.nanoTime();
 		for (Projectile p : waitingAddProjectiles) {
 			try {
 				projectiles.add(p.clone());
@@ -298,6 +300,9 @@ public class GameEngine {
 		for (IGuiElement gui : guiElements) {
 			gui.updateUpdateableElements(deltaTime);
 		}
+		long stop = System.nanoTime();
+		updateCounter++;
+		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**
@@ -309,6 +314,7 @@ public class GameEngine {
 	 *            observer to put graphics instance upon
 	 */
 	private void render(Graphics2D g, ImageObserver observer) {
+		long start = System.nanoTime();
 		g2.setColor(Color.BLACK);
 		g2.fillRect(0, 0, ScreenReference.WIDTH, ScreenReference.HEIGHT);
 		
@@ -341,6 +347,9 @@ public class GameEngine {
 		}
 
 		g.drawImage(this.i, 0, 0, this.frame);
+		long stop = System.nanoTime();
+		drawCounter++;
+		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**

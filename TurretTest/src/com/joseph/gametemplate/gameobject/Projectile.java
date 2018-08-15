@@ -9,11 +9,12 @@ import com.joseph.gametemplate.math.physics.Vector;
 import com.joseph.gametemplate.reference.ScreenReference;
 
 public class Projectile extends GameObject implements Cloneable {
+	public static final int PROJECTILE_MAGNITUDE = 5;
 	private Vector v;
 	
 	public Projectile(double angle, Point2D.Double location) {
 		super(location.x, location.y);
-		this.v = new Vector(5, angle);
+		this.v = new Vector(PROJECTILE_MAGNITUDE, angle);
 	}
 	
 	private Projectile(Vector v, double x, double y) {

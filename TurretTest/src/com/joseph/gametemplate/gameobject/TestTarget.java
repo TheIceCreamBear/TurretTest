@@ -35,7 +35,7 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	
 	@Override
 	public void update(double deltaTime) {
-		if ((int) this.x == (int) waypoint.getX() && (int) this.y == (int) waypoint.getY()) {
+		if ((int) Math.round(this.x) == (int) waypoint.getX() && (int) Math.round(this.y) == (int) waypoint.getY()) {
 			this.movementVector = new Vector(0, 0);
 		} else {
 			this.movementVector = new Vector(1, MathHelper.getAngleRad(x, y, waypoint));
@@ -44,6 +44,11 @@ public class TestTarget extends GameObject implements IWaypointListener {
 		this.y += movementVector.getJ();
 	}
 
+	
+	public Vector getMovementVector() {
+		return this.movementVector;
+	}
+	
 	@Override
 	public void updateWaypoint(DPoint waypoint) {
 		this.waypoint = waypoint;
