@@ -11,18 +11,15 @@ import com.joseph.gametemplate.reference.ScreenReference;
 public class Projectile extends GameObject implements Cloneable {
 	public static final int PROJECTILE_MAGNITUDE = 5;
 	private Vector v;
-	private GameObject forDebugOnly;
 	
-	public Projectile(double angle, DPoint loc, GameObject target) {
+	public Projectile(double angle, DPoint loc) {
 		super(loc.getX(), loc.getY());
 		this.v = new Vector(PROJECTILE_MAGNITUDE, angle);
-		this.forDebugOnly = target;
 	}
 	
-	private Projectile(Vector v, double x, double y, GameObject target) {
+	private Projectile(Vector v, double x, double y) {
 		super(x, y);
 		this.v = v;
-		this.forDebugOnly = target;
 	}
 
 	@Override
@@ -39,7 +36,7 @@ public class Projectile extends GameObject implements Cloneable {
 	
 	@Override
 	public Projectile clone() throws CloneNotSupportedException {
-		return new Projectile(v, x, y, forDebugOnly);
+		return new Projectile(v, x, y);
 	}
 	
 	public boolean inGameMap() {
