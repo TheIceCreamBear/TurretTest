@@ -1,5 +1,7 @@
 package com.joseph.gametemplate.math;
 
+import com.joseph.gametemplate.math.physics.Vector;
+
 public class DPoint {
 	private double x;
 	private double y;
@@ -15,5 +17,22 @@ public class DPoint {
 	
 	public double getY() {
 		return this.y;
+	}
+	
+	public DPoint add(DPoint p) {
+		return new DPoint(x + p.x, y + p.y);
+	}
+	
+	public DPoint subtract(DPoint p) {
+		return new DPoint(x - p.x, y - p.y);
+	}
+	
+	public DPoint offest(Vector v) {
+		return new DPoint(x + v.getI(), y + v.getJ());
+	}
+	
+	@Override
+	public String toString() {
+		return super.toString() + " x:" + this.x + " y:" + this.y;
 	}
 }

@@ -1,5 +1,6 @@
 package com.joseph.gametemplate.math.physics;
 
+import com.joseph.gametemplate.math.DPoint;
 import com.joseph.gametemplate.math.MathHelper;
 
 public class Vector {
@@ -15,9 +16,9 @@ public class Vector {
 		this.j = this.magnitude * Math.sin(this.angle);
 	}
 	
-	public Vector(double i, double j, boolean nil) {
-		this.i = i;
-		this.j = j;
+	public Vector(DPoint p) {
+		this.i = p.getX();
+		this.j = p.getY();
 		this.magnitude = Math.sqrt(MathHelper.square(this.i) + MathHelper.square(this.j));
 		this.angle = Math.atan(this.j / this.i);
 	}
@@ -71,5 +72,14 @@ public class Vector {
 	
 	public Vector multiply(double scalar) {
 		return new Vector(magnitude * scalar, angle);
+	}
+	
+	public boolean movingTwoards(DPoint origin, DPoint movingObj) {
+		return MathHelper.getDistance(origin, movingObj) < MathHelper.getDistance(origin, movingObj.offest(this));
+	}
+	
+	@Override
+	public String toString() {
+		return super.toString() + " i:" + this.i + " j:" + this.j + " mag:" + this.magnitude + " ang:" + this.angle;
 	}
 }

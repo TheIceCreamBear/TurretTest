@@ -121,6 +121,7 @@ public class GameEngine {
 	
 	private int updateCounter;
 	private int drawCounter;
+	private Projectile lasftFired;
 
 	/**
 	 * 
@@ -262,7 +263,11 @@ public class GameEngine {
 		long start = System.nanoTime();
 		for (Projectile p : waitingAddProjectiles) {
 			try {
-				projectiles.add(p.clone());
+				Projectile toAdd = p.clone();
+				if (this.lasftFired != null)
+					this.lasftFired.dontPrint();
+				this.lasftFired = toAdd;
+				projectiles.add(toAdd);
 				waitingAddProjectiles.remove();
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
@@ -302,7 +307,7 @@ public class GameEngine {
 		}
 		long stop = System.nanoTime();
 		updateCounter++;
-		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
+//		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**
@@ -349,7 +354,7 @@ public class GameEngine {
 		g.drawImage(this.i, 0, 0, this.frame);
 		long stop = System.nanoTime();
 		drawCounter++;
-		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
+//		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**
@@ -472,6 +477,7 @@ public class GameEngine {
 				closest = current;
 			}
 		}
+		System.err.println(closest);
 		return closest;
 	}
 }

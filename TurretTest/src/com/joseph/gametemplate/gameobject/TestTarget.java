@@ -13,6 +13,8 @@ import com.joseph.gametemplate.math.physics.Vector;
 public class TestTarget extends GameObject implements IWaypointListener {
 	private Vector movementVector;
 	private DPoint waypoint;
+	private int width = 5;
+	private int height = 5;
 	
 	public TestTarget() {
 		this (1500, 600);
@@ -27,10 +29,10 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	@Override
 	public void draw(Graphics2D g, ImageObserver observer) {
 		g.setColor(Color.green);
-		g.fillRect((int) this.x - 2, (int) this.y - 2, 5, 5);
+		g.fillRect((int) this.x - (width / 2), (int) this.y - (height / 2), width, height);
 		g.setColor(Color.red);
-		movementVector = movementVector.multiply(100);
-		g.drawLine((int) x, (int) y, (int) (x + movementVector.getI()), (int) (y + movementVector.getJ()));
+		Vector tempMovementVector = movementVector.multiply(100);
+		g.drawLine((int) x, (int) y, (int) (x + tempMovementVector.getI()), (int) (y + tempMovementVector.getJ()));
 	}
 	
 	@Override
@@ -55,7 +57,7 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	}
 	
 	public boolean coliding(Projectile p) {
-		Rectangle2D r = new Rectangle2D.Double(x - 2, y - 2, 5, 5);
+		Rectangle2D r = new Rectangle2D.Double(this.x - (width / 2), this.y - (height / 2), width, height);
 		return r.contains(p.getX(), p.getY());
 	}
 }

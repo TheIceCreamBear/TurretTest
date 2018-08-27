@@ -74,6 +74,8 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.target = GameEngine.getClosestTarget(getLocation());
 		if (this.target != null && this.target instanceof TestTarget) {
 			TestTarget tt = (TestTarget) this.target;
+			this.targetDegreesWithLead = getAngleNew(tt);
+			/*  = = = = = = = = = = = = = OLD
 			this.targetDegrees = getAngle(target.getLocation());
 			if (tt.getMovementVector().getMagnitude() != 0) {
 				this.lead = this.getLead(tt);
@@ -83,6 +85,12 @@ public class Turret extends GameObject implements IMouseReliant {
 				this.targetDegreesWithLead = this.targetDegrees;
 			}
 			System.err.println(this.targetDegreesWithLead - this.previousDegWithLead);
+			*/
+			if (this.targetDegreesWithLead > 180 && this.targetDegreesWithLead <= 360) {
+				this.targetDegreesWithLead -= 180;
+			} else if (this.targetDegreesWithLead < -180) {
+				this.targetDegreesWithLead += 180;
+			}
 			
 			if (this.targetDegreesWithLead == 180 && this.degrees < 0) {
 				this.targetDegreesWithLead = -180;
@@ -151,60 +159,6 @@ public class Turret extends GameObject implements IMouseReliant {
 		return (b - a + 360) % 360 < 180;
 	}
 	
-	private double getAngle(Point target) {
-		if (target == null) {
-			return 0.0;
-		}
-		
-		return Math.toDegrees(Math.atan2(target.y - this.y, target.x - this.x));
-	}
-	
-	private double getLead(TestTarget t) {
-		Vector projectileCurrent = new Vector(Projectile.PROJECTILE_MAGNITUDE, Math.toDegrees(this.targetDegrees));
-		double dotProd = projectileCurrent.dotProduct(t.getMovementVector());
-		double thetaDeg = Math.toDegrees(Math.atan(dotProd) / (projectileCurrent.getMagnitude() * t.getMovementVector().getMagnitude()));
-		return thetaDeg;
-	}
-	
-	private double getAngle(TestTarget t) {
-		Vector tVel = t.getMovementVector();
-		DPoint tPos = t.getLocation();
-		
-		double a = MathHelper.square(tVel.getI()) + MathHelper.square(tVel.getJ()) - MathHelper.square(Projectile.PROJECTILE_MAGNITUDE);
-		double b = 2 * (tVel.getI() * (tPos.getX() - this.x) + tVel.getJ() * (tPos.getY() - this.y));
-		double c = MathHelper.square(tPos.getX() - this.x) + MathHelper.square(tPos.getY() - this.y);
-		
-		double disc = MathHelper.square(b) - 4 * a * c;
-		
-		if (disc < 0) {
-			return targetDegreesWithLead; // no change
-		}
-		
-		double possilbe1 = (-b + Math.sqrt(disc)) / (2 * a);
-		double possilbe2 = (-b - Math.sqrt(disc)) / (2 * a);
-
-		if (disc == 0) {
-			// Both Are Same
-			double i = possilbe1 * tVel.getI() + tPos.getX();
-			double j = possilbe1 * tVel.getJ() + tPos.getY();
-			return Math.toDegrees(Math.atan(j / i));
-		}
-		
-		if (possilbe1 < possilbe2 && possilbe1 > 0) {
-			double i = possilbe1 * tVel.getI() + tPos.getX();
-			double j = possilbe1 * tVel.getJ() + tPos.getY();
-			return Math.toDegrees(Math.atan(j / i));
-		} else {
-			if (possilbe2 > 0) {
-				double i = possilbe2 * tVel.getI() + tPos.getX();
-				double j = possilbe2 * tVel.getJ() + tPos.getY();
-				return Math.toDegrees(Math.atan(j / i));
-			}
-		}
-		
-		return targetDegreesWithLead;
-	}
-	
 	private double getAngle(DPoint target) {
 		if (target == null) {
 			return 0.0;
@@ -212,9 +166,116 @@ public class Turret extends GameObject implements IMouseReliant {
 		
 		return Math.toDegrees(Math.atan2(target.getY() - this.y, target.getX() - this.x));
 	}
+	
+	private double getAngle2(TestTarget tt) {
+		double w = Projectile.PROJECTILE_MAGNITUDE;
+		DPoint p = tt.getLocation();
+		DPoint o = getLocation();
+		Vector v = tt.getMovementVector();
+		Vector distance = new Vector(p.subtract(o));
+		double a = v.dotProduct(v) - (w * w);
+		double b = MathHelper.square(v.dotProduct(distance));
+		double c = distance.dotProduct(distance);
+		
+		double d = b * b - 4 * a * c;
+		System.out.println(a);
+		System.out.println(b);
+		System.out.println(c);
+		System.out.println(d);
+		if (d < 0) {
+			System.err.println("OJYGAGSDOUYFSADOUYASDOUYG");
+			return this.degrees;
+		} else {
+			double t0 = (-b - Math.sqrt(d)) / (2 * a);
+			double t1 = (-b + Math.sqrt(d)) / (2 * a);
+			
+			double t = (t0 < 0) ? t1 : (t1 < 0) ? t0 : Math.min(t1, t0);
+			DPoint pintercept = tt.getLocation().offest(v.multiply(t));
+			return MathHelper.getAngle(getLocation(), pintercept);
+		}
+	}
+	
+	private double getAngleNew2(TestTarget tt) {
+		Vector ba = new Vector(tt.getLocation().subtract(getLocation()));
+		System.err.println(ba);
+		double vxv = tt.getMovementVector().dotProduct(tt.getMovementVector());
+		System.err.println(tt.getMovementVector());
+		System.err.println(vxv);
+		double b = ba.dotProduct(tt.getMovementVector());
+		System.err.println(b);
+		double a = Projectile.PROJECTILE_MAGNITUDE * Projectile.PROJECTILE_MAGNITUDE - vxv;
+		System.err.println(a);
+		double quadSol = b + Math.sqrt(b*b + a * ba.dotProduct(ba)) / a;
+		System.err.println(quadSol);
+		DPoint intercept = tt.getLocation().offest(tt.getMovementVector().multiply(quadSol));
+		System.err.println(intercept);
+		
+		return MathHelper.getAngle(getLocation(), intercept);
+	}
+	
+	private double getAngleNew(TestTarget tt) {
+		Vector targetVel = tt.getMovementVector();
+		DPoint dp = tt.getLocation().subtract(getLocation());
+		Vector targetMinusThis = new Vector(dp);
+		double a = MathHelper.square(Projectile.PROJECTILE_MAGNITUDE) - targetVel.dotProduct(targetVel);
+		double b = -2 * targetVel.dotProduct(targetMinusThis);
+		double c = -(targetMinusThis.dotProduct(targetMinusThis));		
+		
+//		double quadSol = solveQuad(a, b, c);
+		double d = b * b - 4 * a * c;
+		if (d < 0) {
+			System.err.println("OJYGAGSDOUYFSADOUYASDOUYG");
+			return this.degrees;
+		} else {
+			double t0 = (-b - Math.sqrt(d)) / (2 * a);
+			double t1 = (-b + Math.sqrt(d)) / (2 * a);
+			
+			double t = (t0 < 0) ? t1 : (t1 < 0) ? t0 : Math.min(t1, t0);
+			DPoint pintercept = tt.getLocation().offest(tt.getMovementVector().multiply(t));
+			return MathHelper.getAngle(getLocation(), pintercept);
+		}
+//		Vector v = targetVel.multiply(quadSol);
+//		DPoint p = tt.getLocation().offest(v);
+//		return MathHelper.getAngle(getLocation(), p);
+		
+		
+//		System.err.println(targetVel);
+//		System.err.println(tt.getLocation());
+//		System.err.println(this.getLocation());
+//		System.err.println(dp);
+//		System.err.println(targetMinusThis);
+//		System.err.println(a);
+//		System.err.println(b);
+//		System.err.println(c);
+//		System.err.println("quadSol:" + quadSol);
+//		System.err.println(v);
+//		System.err.println(p);
+		
+//		Vector intercept = new Vector(p.subtract(getLocation()));
+//		Vector finalV = intercept.multiply(Projectile.PROJECTILE_MAGNITUDE / Math.sqrt(intercept.dotProduct(intercept)));
+//		return finalV.getAngle();
+		
+	}
+	
+	private double solveQuad(double a, double b, double c) {
+		return (b + Math.sqrt(b * b - 4 * a * c)) / (2 * a);
+	}
+	
+	private double getLead(TestTarget tt) {
+		Vector targetVel = tt.getMovementVector();
+		Vector targetMinusThis = new Vector(tt.getLocation().subtract(getLocation()));
+		double a = MathHelper.square(Projectile.PROJECTILE_MAGNITUDE) - targetVel.dotProduct(targetVel);
+		double b = -2 * targetVel.dotProduct(targetMinusThis);
+		double c = -(targetMinusThis.dotProduct(targetMinusThis));
+		
+		DPoint p = tt.getLocation().offest(targetVel.multiply(solveQuad(a, b, c)));
+		
+//		return MathHelper.getAngle(getLocation(), tt.getLocation()) - MathHelper.getAngle(getLocation(), p);
+		return MathHelper.getAngle(getLocation(), p) - MathHelper.getAngle(getLocation(), tt.getLocation());
+	}
 
 	private void fire() {
-		GameEngine.sapwnProjectile(new Projectile(Math.toRadians(degrees), new Point2D.Double(this.x, this.y)));
+		GameEngine.sapwnProjectile(new Projectile(Math.toRadians(degrees), getLocation(), this.target));
 		
 	}
 	
