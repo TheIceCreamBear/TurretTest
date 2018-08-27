@@ -53,7 +53,7 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	
 	@Override
 	public void updateWaypoint(DPoint waypoint) {
-		this.waypoint = waypoint;
+//		this.waypoint = waypoint;
 	}
 	
 	public boolean coliding(Projectile p) {

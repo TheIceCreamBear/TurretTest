@@ -23,6 +23,7 @@ public class Turret extends GameObject implements IMouseReliant {
 	private GameObject target;
 	private Vector movementVector;
 	private Vector visualFiringVector;
+	private DPoint drawPos;
 	private double targetDegrees;
 	private double degrees;
 	private int fireCounter;
@@ -45,14 +46,17 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.visualFiringVector = new Vector(3000, 0);
 		this.movementVector = new Vector(0, 0);
 		this.degrees = 0;
+		this.drawPos = this.getLocation();
 	}
 	
 	@Override
 	public void draw(Graphics2D g, ImageObserver observer) {
+		double x = drawPos.getX();
+		double y = drawPos.getY();
 		g.setColor(Color.white);
-		g.drawPolygon(makePoly(drawPoints));
+		g.drawPolygon(makePoly(drawPoints, x, y));
 		g.setColor(Color.red);
-		g.fillRect((int) this.x, (int) this.y, 1, 1);
+		g.fillRect((int) x, (int) y, 1, 1);
 		if (Reference.DEBUG_MODE) {
 			g.drawLine((int) x, (int) y, (int) (x + visualFiringVector.getI()), (int) (y + visualFiringVector.getJ()));
 			g.setColor(Color.green);
@@ -86,7 +90,7 @@ public class Turret extends GameObject implements IMouseReliant {
 			if (Math.abs(this.degrees - this.targetDegrees) < 2.5) {
 				this.degrees = this.targetDegrees;
 			} else {
-				if (this.movePositive(degrees, targetDegrees)) {
+				if (this.rotatePositive(degrees, targetDegrees)) {
 //					this.degrees++;
 					this.degrees += 1.5;
 				} else {
@@ -137,7 +141,11 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.movementVector = movementVector;
 	}
 	
-	private boolean movePositive(double a, double b) {
+	public void setDrawPos(DPoint drawPos) {
+		this.drawPos = drawPos;
+	}
+	
+	private boolean rotatePositive(double a, double b) {
 		b += 180;
 		a += 180;
 		return (b - a + 360) % 360 < 180;
@@ -145,7 +153,7 @@ public class Turret extends GameObject implements IMouseReliant {
 	
 	private double getAngleWithLead(TestTarget tt) {
 		Vector targetVel = tt.getMovementVector();
-		DPoint dp = tt.getLocation().subtract(getLocation());
+		DPoint dp = tt.getLocation().subtract(drawPos);
 		Vector targetMinusThis = new Vector(dp);
 		double a = MathHelper.square(Projectile.PROJECTILE_MAGNITUDE) - targetVel.dotProduct(targetVel);
 		double b = -2 * targetVel.dotProduct(targetMinusThis);
@@ -161,12 +169,12 @@ public class Turret extends GameObject implements IMouseReliant {
 			
 			double t = (t0 < 0) ? t1 : (t1 < 0) ? t0 : Math.min(t1, t0);
 			DPoint pintercept = tt.getLocation().offest(tt.getMovementVector().multiply(t));
-			return MathHelper.getAngle(getLocation(), pintercept);
+			return MathHelper.getAngle(drawPos, pintercept);
 		}
 	}	
 
 	private void fire() {
-		GameEngine.sapwnProjectile(new Projectile(Math.toRadians(degrees), getLocation(), this.target));
+		GameEngine.sapwnProjectile(new Projectile(Math.toRadians(degrees), drawPos));
 		
 	}
 	
@@ -174,7 +182,7 @@ public class Turret extends GameObject implements IMouseReliant {
 		AffineTransform.getRotateInstance(Math.toRadians(degrees + 90), 00, 00).transform(shapePoints, 0, drawPoints, 0, 14);
 	}
 	
-	private Polygon makePoly(Point[] points) {
+	private Polygon makePoly(Point[] points, double x, double y) {
 		Polygon poly = new Polygon();
 		
 		for (int i = 0; i < points.length; i++) {
@@ -182,7 +190,7 @@ public class Turret extends GameObject implements IMouseReliant {
 			poly.addPoint(p.x, p.y);
 		}
 		
-		poly.translate((int) this.x, (int) this.y);
+		poly.translate((int) x, (int) y);
 		
 		return poly;
 	}

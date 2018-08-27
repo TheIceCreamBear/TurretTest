@@ -11,6 +11,7 @@ import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
 import java.util.ArrayList;
 import java.util.Queue;
+import java.util.Random;
 import java.util.concurrent.ArrayBlockingQueue;
 
 import javax.swing.JFrame;
@@ -18,8 +19,8 @@ import javax.swing.JFrame;
 import com.joseph.gametemplate.gameobject.GameObject;
 import com.joseph.gametemplate.gameobject.Projectile;
 import com.joseph.gametemplate.gameobject.RenderLockObject;
+import com.joseph.gametemplate.gameobject.Ship;
 import com.joseph.gametemplate.gameobject.TestTarget;
-import com.joseph.gametemplate.gameobject.Turret;
 import com.joseph.gametemplate.gui.IGuiElement;
 import com.joseph.gametemplate.handlers.GKELAH;
 import com.joseph.gametemplate.handlers.MouseHandler;
@@ -206,9 +207,9 @@ public class GameEngine {
 		
 		this.frc = this.g2.getFontRenderContext();
 		
-		Turret t = new Turret();
-		gameObjects.add(t);
-		this.mouseHandlerInstace.registerMouseReliant(t);
+//		Turret t = new Turret();
+//		gameObjects.add(t);
+//		this.mouseHandlerInstace.registerMouseReliant(t);
 		
 //		t = new Turret(100, 100);
 //		gameObjects.add(t);
@@ -233,18 +234,18 @@ public class GameEngine {
 		targets.add(tt);
 		this.mouseHandlerInstace.registerWaypointListener(tt);
 		
-//		Random r = new Random();
-//		int num = r.nextInt(20) + 80;
-//		for (int i = 0; i < num; i++) {
-//			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
-//			gameObjects.add(tt);
-//			targets.add(tt);
-//			this.mouseHandlerInstace.registerWaypointListener(tt);
-//		}
+		Random r = new Random();
+		int num = r.nextInt(20) + 80;
+		for (int i = 0; i < num; i++) {
+			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
+			gameObjects.add(tt);
+			targets.add(tt);
+			this.mouseHandlerInstace.registerWaypointListener(tt);
+		}
 		
-//		Ship s = new Ship(1000, 1000);
-//		gameObjects.add(s);
-//		this.mouseHandlerInstace.registerWaypointListener(s);
+		Ship s = new Ship(1000, 1000);
+		gameObjects.add(s);
+		this.mouseHandlerInstace.registerWaypointListener(s);
 		
 		this.releaseFocous();
 		
@@ -303,7 +304,8 @@ public class GameEngine {
 		}
 		long stop = System.nanoTime();
 		updateCounter++;
-		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
+		System.out.println("update " + updateCounter + " took " + (stop - start) + " nano seconds with " 
+				+ (16666666.666 - (start - stop)) + " nano seconds to spare");
 	}
 
 	/**
@@ -350,7 +352,8 @@ public class GameEngine {
 		g.drawImage(this.i, 0, 0, this.frame);
 		long stop = System.nanoTime();
 		drawCounter++;
-		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
+		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds with " 
+				+ (16666666.666666666046 - (start - stop)) + "nano seconds to spare");
 	}
 
 	/**
@@ -473,7 +476,6 @@ public class GameEngine {
 				closest = current;
 			}
 		}
-		System.err.println(closest);
 		return closest;
 	}
 }

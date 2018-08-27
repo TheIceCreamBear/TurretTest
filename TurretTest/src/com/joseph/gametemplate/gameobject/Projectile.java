@@ -13,8 +13,12 @@ public class Projectile extends GameObject implements Cloneable {
 	private Vector v;
 	
 	public Projectile(double angle, DPoint loc) {
+		this(angle, loc, new Vector(0, 0));
+	}
+	
+	public Projectile(double angle, DPoint loc, Vector turretMovement) {
 		super(loc.getX(), loc.getY());
-		this.v = new Vector(PROJECTILE_MAGNITUDE, angle);
+		this.v = new Vector(PROJECTILE_MAGNITUDE, angle).add(turretMovement);
 	}
 	
 	private Projectile(Vector v, double x, double y) {
