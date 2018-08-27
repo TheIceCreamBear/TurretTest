@@ -307,7 +307,7 @@ public class GameEngine {
 		}
 		long stop = System.nanoTime();
 		updateCounter++;
-//		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
+		System.out.println("update " + updateCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**
@@ -354,7 +354,7 @@ public class GameEngine {
 		g.drawImage(this.i, 0, 0, this.frame);
 		long stop = System.nanoTime();
 		drawCounter++;
-//		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
+		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds");
 	}
 
 	/**

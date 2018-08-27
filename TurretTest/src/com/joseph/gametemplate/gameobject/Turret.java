@@ -6,7 +6,6 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
-import java.awt.geom.Point2D;
 import java.awt.image.ImageObserver;
 
 import com.joseph.gametemplate.engine.GameEngine;
@@ -23,12 +22,8 @@ public class Turret extends GameObject implements IMouseReliant {
 	private Point[] drawPoints;
 	private GameObject target;
 	private Vector movementVector;
-	private Vector firingVector;
 	private Vector visualFiringVector;
 	private double targetDegrees;
-	private double targetDegreesWithLead;
-	private double previousDegWithLead;
-	private double lead;
 	private double degrees;
 	private int fireCounter;
 	private int burstLeft;
@@ -62,7 +57,7 @@ public class Turret extends GameObject implements IMouseReliant {
 			g.drawLine((int) x, (int) y, (int) (x + visualFiringVector.getI()), (int) (y + visualFiringVector.getJ()));
 			g.setColor(Color.green);
 			g.drawString("" + this.degrees, (int) x, (int) y);
-			g.drawString("" + this.targetDegreesWithLead, (int) x, (int) y + ScreenReference.charHeight);
+			g.drawString("" + this.targetDegrees, (int) x, (int) y + ScreenReference.charHeight);
 			
 		}
 	}
@@ -74,34 +69,24 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.target = GameEngine.getClosestTarget(getLocation());
 		if (this.target != null && this.target instanceof TestTarget) {
 			TestTarget tt = (TestTarget) this.target;
-			this.targetDegreesWithLead = getAngle(tt);
-			/*  = = = = = = = = = = = = = OLD
-			this.targetDegrees = getAngle(target.getLocation());
-			if (tt.getMovementVector().getMagnitude() != 0) {
-				this.lead = this.getLead(tt);
-				this.targetDegreesWithLead = this.targetDegrees + this.lead;
-//				this.targetDegrees = getAngle((TestTarget) this.target);
-			} else {
-				this.targetDegreesWithLead = this.targetDegrees;
-			}
-			System.err.println(this.targetDegreesWithLead - this.previousDegWithLead);
-			*/
-			if (this.targetDegreesWithLead > 180 && this.targetDegreesWithLead <= 360) {
-				this.targetDegreesWithLead -= 180;
-			} else if (this.targetDegreesWithLead < -180) {
-				this.targetDegreesWithLead += 180;
+			this.targetDegrees = getAngleWithLead(tt);
+			if (this.targetDegrees > 180 && this.targetDegrees <= 360) {
+				this.targetDegrees -= 180;
+			} else if (this.targetDegrees < -180) {
+				this.targetDegrees += 180;
 			}
 			
-			if (this.targetDegreesWithLead == 180 && this.degrees < 0) {
-				this.targetDegreesWithLead = -180;
+			if (this.targetDegrees == 180 && this.degrees < 0) {
+				this.targetDegrees = -180;
 			}
 		}
+		
 //		this.degrees = getAngle(GameEngine.getInstance().getMouseLocation());
-		if (this.degrees != this.targetDegreesWithLead) {
-			if (Math.abs(this.degrees - this.targetDegreesWithLead) < 2.5) {
-				this.degrees = this.targetDegreesWithLead;
+		if (this.degrees != this.targetDegrees) {
+			if (Math.abs(this.degrees - this.targetDegrees) < 2.5) {
+				this.degrees = this.targetDegrees;
 			} else {
-				if (this.movePositive(degrees, targetDegreesWithLead)) {
+				if (this.movePositive(degrees, targetDegrees)) {
 //					this.degrees++;
 					this.degrees += 1.5;
 				} else {
@@ -116,7 +101,7 @@ public class Turret extends GameObject implements IMouseReliant {
 				}
 			}
 		}
-		boolean targetLocked = this.targetDegreesWithLead == this.degrees;
+		boolean targetLocked = this.targetDegrees == this.degrees;
 		
 		this.rotatePoints();
 		this.visualFiringVector = new Vector(3000, Math.toRadians(degrees));
@@ -135,7 +120,6 @@ public class Turret extends GameObject implements IMouseReliant {
 				}
 			}
 		}
-		this.previousDegWithLead = this.targetDegreesWithLead;
 	}
 	
 	@Override
@@ -144,9 +128,9 @@ public class Turret extends GameObject implements IMouseReliant {
 		return false;
 	}
 	
-	public void setTarget(GameObject obj) {
+	public void setTarget(TestTarget obj) {
 		this.target = obj;
-		this.targetDegreesWithLead = this.getAngle(obj.getLocation());
+		this.targetDegrees = this.getAngleWithLead(obj);
 	}
 	
 	public void setMovementVector(Vector movementVector) {
@@ -159,15 +143,7 @@ public class Turret extends GameObject implements IMouseReliant {
 		return (b - a + 360) % 360 < 180;
 	}
 	
-	private double getAngle(DPoint target) {
-		if (target == null) {
-			return 0.0;
-		}
-		
-		return Math.toDegrees(Math.atan2(target.getY() - this.y, target.getX() - this.x));
-	}
-	
-	private double getAngle(TestTarget tt) {
+	private double getAngleWithLead(TestTarget tt) {
 		Vector targetVel = tt.getMovementVector();
 		DPoint dp = tt.getLocation().subtract(getLocation());
 		Vector targetMinusThis = new Vector(dp);
