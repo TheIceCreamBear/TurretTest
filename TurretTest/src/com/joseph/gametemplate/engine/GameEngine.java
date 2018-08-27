@@ -121,7 +121,6 @@ public class GameEngine {
 	
 	private int updateCounter;
 	private int drawCounter;
-	private Projectile lasftFired;
 
 	/**
 	 * 
@@ -264,9 +263,6 @@ public class GameEngine {
 		for (Projectile p : waitingAddProjectiles) {
 			try {
 				Projectile toAdd = p.clone();
-				if (this.lasftFired != null)
-					this.lasftFired.dontPrint();
-				this.lasftFired = toAdd;
 				projectiles.add(toAdd);
 				waitingAddProjectiles.remove();
 			} catch (CloneNotSupportedException e) {
