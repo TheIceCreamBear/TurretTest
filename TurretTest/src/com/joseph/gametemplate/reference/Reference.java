@@ -14,6 +14,7 @@ import java.util.Map;
 public class Reference {
 	public static final String DIRPREFIX = System.getProperty("user.dir");
 	public static boolean DEBUG_MODE = true;
+	public static boolean TEXT_DEBUG_DRAWING = true;
 	public static boolean HARD_CORE_DEBUG_MODE = false;
 	
 	public static class Fonts {

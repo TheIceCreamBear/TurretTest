@@ -14,6 +14,7 @@ public class Vector {
 		this.angle = angle;
 		this.i = this.magnitude * Math.cos(this.angle);
 		this.j = this.magnitude * Math.sin(this.angle);
+		checkAndMakeValid();
 	}
 	
 	public Vector(DPoint p) {
@@ -21,6 +22,7 @@ public class Vector {
 		this.j = p.getY();
 		this.magnitude = Math.sqrt(MathHelper.square(this.i) + MathHelper.square(this.j));
 		this.angle = Math.atan(this.j / this.i);
+		checkAndMakeValid();
 	}
 	
 	private Vector(Vector v1, Vector v2, boolean add) {
@@ -34,6 +36,23 @@ public class Vector {
 			this.j = v1.j - v2.j;
 			this.magnitude = Math.sqrt(Math.pow(this.i, 2) + Math.pow(this.j, 2));
 			this.angle = Math.atan(this.j / this.i);
+		}
+		
+		checkAndMakeValid();
+	}
+	
+	private void checkAndMakeValid() {
+		if (this.i == Double.NaN) {
+			this.i = 0;
+		}
+		if (this.j == Double.NaN) {
+			this.j = 0;
+		}
+		if (this.magnitude == Double.NaN) {
+			this.magnitude = 0;
+		}
+		if (this.angle == Double.NaN) {
+			this.angle = 0;
 		}
 	}
 	
@@ -80,6 +99,7 @@ public class Vector {
 	
 	@Override
 	public String toString() {
+		checkAndMakeValid();
 		return super.toString() + " i:" + this.i + " j:" + this.j + " mag:" + this.magnitude + " ang:" + this.angle;
 	}
 }

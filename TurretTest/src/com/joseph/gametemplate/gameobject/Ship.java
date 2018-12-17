@@ -16,10 +16,12 @@ import com.joseph.gametemplate.reference.Reference;
 public class Ship extends GameObject implements IWaypointListener {
 	public static final double SHIP_SLOW_SPEED = 1.5;
 	public static final double SHIP_FAST_SPEED = 2;
+	public static final double SHIP_MAX_SPEED = 25;
 //	private Polygon shape = new Polygon(new int[] {0, 299, -300, 0}, new int[] {-400, 399, 399, -400}, 4);
 	private Polygon shape = new Polygon(new int[] {0, 299, 49, 49, 99, 99, -100, -100, -50, -50, -300, 0}, new int[] {-400, 399, 399, 449, 449, 399, 399, 449, 449, 399, 399, -400}, 12);
 	private final Point[] shapePoints;
 	private Point[] drawPoints;
+	private Vector accelerationVector;
 	private Vector movementVector;
 	private DPoint waypoint;
 	private Turret portTurret;
@@ -28,10 +30,12 @@ public class Ship extends GameObject implements IWaypointListener {
 	private Turret starbordTurret1;
 	private Turret portTurret2;
 	private Turret starbordTurret2;
+	private CrazyTurret ct;
+	private Color c;
 	private double facingDegrees;
 	private double waypointDegrees;
 	
-	public Ship(double x, double y) {
+	public Ship(double x, double y, Color c) {
 		super(x, y);
 		this.shapePoints = new Point[shape.npoints];
 		this.drawPoints = new Point[shapePoints.length];
@@ -40,40 +44,50 @@ public class Ship extends GameObject implements IWaypointListener {
 			drawPoints[i] = new Point(shape.xpoints[i], shape.ypoints[i]);
 		}
 		this.movementVector = new Vector(0, 0);
+		this.accelerationVector = new Vector(0, 0);
 		this.waypoint = new DPoint(x, y);
-		this.portTurret = new Turret(x - 150, y + 200);
-		this.starbordTurret = new Turret(x + 150, y + 200);
-		this.portTurret1 = new Turret(x - 175, y + 250);
-		this.starbordTurret1 = new Turret(x + 175, y + 250);
-		this.portTurret2 = new Turret(x - 200, y + 300);
-		this.starbordTurret2 = new Turret(x + 200, y + 300);
+		this.portTurret = new Turret(x - 100, y + 100, c);
+		this.starbordTurret = new Turret(x + 100, y + 100, c);
+		this.portTurret1 = new Turret(x - 150, y + 200, c);
+		this.starbordTurret1 = new Turret(x + 150, y + 200, c);
+		this.portTurret2 = new Turret(x - 200, y + 300, c);
+		this.starbordTurret2 = new Turret(x + 200, y + 300, c);
+		this.ct = new CrazyTurret(x, y);
+		this.c = c;
 	}
 
 	@Override
 	public void draw(Graphics2D g, ImageObserver observer) {
-		g.setColor(Color.white);
-		g.drawPolygon(makePoly(drawPoints));
-		g.setColor(Color.red);
-		g.fillRect((int) this.x, (int) this.y, 1, 1);
+		g.setColor(c);
+		Polygon p = makePoly(drawPoints);
+		g.drawPolygon(p);
 		if (Reference.DEBUG_MODE) {
+			g.setColor(Color.red);
+			g.fillRect((int) this.x, (int) this.y, 1, 1);
+			g.setColor(Color.GREEN);
 			Vector visVec = this.movementVector.multiply(100);
 			g.drawLine((int) x, (int) y, (int) (x + visVec.getI()), (int) (y + visVec.getJ()));
+			g.setColor(Color.MAGENTA);
+			g.draw(p.getBounds2D());
+		}
+		if (Reference.TEXT_DEBUG_DRAWING) {
 			g.setColor(Color.green);
 			g.drawString("" + this.facingDegrees, (int) x, (int) y);
-			
 		}
+			
 		this.portTurret.draw(g, observer);
 		this.starbordTurret.draw(g, observer);
 		this.portTurret1.draw(g, observer);
 		this.starbordTurret1.draw(g, observer);
 		this.portTurret2.draw(g, observer);
 		this.starbordTurret2.draw(g, observer);
+//		this.ct.draw(g, observer);
 	}
 	
 	@Override
 	public void update(double deltaTime) {
 		double distance = MathHelper.getDistance(getLocation(), waypoint);
-		if (distance > 2.5) {
+		if (distance > this.movementVector.getMagnitude()) {
 			this.waypointDegrees = MathHelper.getAngle(getLocation(), waypoint);
 			if (this.waypointDegrees == 180 && this.facingDegrees < 0) {
 				this.waypointDegrees = -180;
@@ -84,11 +98,11 @@ public class Ship extends GameObject implements IWaypointListener {
 					this.facingDegrees = this.waypointDegrees;
 				} else {
 					if (this.rotatePositive(facingDegrees, waypointDegrees)) {
-//					this.facingDegrees++;
-						this.facingDegrees += 0.5;
+						this.facingDegrees++;
+//						this.facingDegrees += 0.5;
 					} else {
-//					this.facingDegrees--;
-						this.facingDegrees -= 0.5;
+						this.facingDegrees--;
+//						this.facingDegrees -= 0.5;
 					}
 					
 					if (this.facingDegrees < -180) {
@@ -100,18 +114,30 @@ public class Ship extends GameObject implements IWaypointListener {
 			}
 			
 			if (Math.abs(this.facingDegrees - this.waypointDegrees) < 2.5) {
-				this.movementVector = new Vector(SHIP_FAST_SPEED, Math.toRadians(facingDegrees));
+				// This should actually be an acceleration vector that adds to the movement vector
+				this.accelerationVector = new Vector(SHIP_FAST_SPEED, Math.toRadians(facingDegrees));
 			} else if (Math.abs(this.facingDegrees - this.waypointDegrees) < 30) {
-				this.movementVector = new Vector(SHIP_SLOW_SPEED, Math.toRadians(facingDegrees));
+				this.accelerationVector = new Vector(SHIP_SLOW_SPEED, Math.toRadians(facingDegrees));
 			} else {
-				this.movementVector = new Vector(0, 0);
+				this.accelerationVector = new Vector(0, 0);
 			}
 			
-			this.x += movementVector.getI();
-			this.y += movementVector.getJ();
 		} else {
-			this.movementVector = new Vector(0, 0);
+			if (this.movementVector.getMagnitude() != 0) {
+				this.accelerationVector = new Vector(0, 0).subtract(movementVector.multiply(.5));
+			}
+			if (MathHelper.getDistance(getLocation(), waypoint) < 5) {
+				this.accelerationVector = new Vector(0, 0).subtract(movementVector);
+				this.waypoint = getLocation();
+			}
 		}
+		
+		if (this.accelerationVector.getMagnitude() > 0 /*&& this.movementVector.getMagnitude() < SHIP_MAX_SPEED*/) {
+			this.movementVector = this.movementVector.add(accelerationVector);
+		}
+		
+		this.x += movementVector.getI();
+		this.y += movementVector.getJ();
 		
 		this.rotatePoints();
 		
@@ -121,6 +147,7 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.starbordTurret1.setMovementVector(movementVector);
 		this.portTurret2.setMovementVector(movementVector);
 		this.starbordTurret2.setMovementVector(movementVector);
+//		this.ct.setMovementVector(movementVector);
 		
 		this.portTurret.update(deltaTime);
 		this.starbordTurret.update(deltaTime);
@@ -128,12 +155,24 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.starbordTurret1.update(deltaTime);
 		this.portTurret2.update(deltaTime);
 		this.starbordTurret2.update(deltaTime);
+//		this.ct.update(deltaTime);
+	}
+	
+	private void checkValidVector(Vector v) {
+		if (v.getI() == Double.NaN) {
+			throw new RuntimeException("ITS NAN");
+		}
 	}
 	
 	@Override
 	public void updateWaypoint(DPoint waypoint) {
 		this.waypoint = waypoint;
+		this.waypoint = new DPoint(this.waypoint.getX() * 8, this.waypoint.getY() * 8);
 		this.waypointDegrees = MathHelper.getAngle(getLocation(), waypoint);
+	}
+	
+	public Turret[] getTurrets() {
+		return new Turret[] {portTurret, starbordTurret, portTurret1, starbordTurret1, portTurret2, starbordTurret2};
 	}
 	
 	private boolean rotatePositive(double a, double b) {
@@ -165,6 +204,10 @@ public class Ship extends GameObject implements IWaypointListener {
 		turretRotate.transform(star2, star2);
 		this.portTurret2.setDrawPos(port2);
 		this.starbordTurret2.setDrawPos(star2);
+		
+//		DPoint ctp = ct.getLocation();
+//		turretRotate.transform(ctp, ctp);
+//		this.ct.setDrawPos(ctp);
 	}
 	
 	private Polygon makePoly(Point[] points) {

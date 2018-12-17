@@ -6,6 +6,7 @@ import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.RenderingHints;
 import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ImageObserver;
@@ -21,6 +22,7 @@ import com.joseph.gametemplate.gameobject.Projectile;
 import com.joseph.gametemplate.gameobject.RenderLockObject;
 import com.joseph.gametemplate.gameobject.Ship;
 import com.joseph.gametemplate.gameobject.TestTarget;
+import com.joseph.gametemplate.gameobject.Turret;
 import com.joseph.gametemplate.gui.IGuiElement;
 import com.joseph.gametemplate.handlers.GKELAH;
 import com.joseph.gametemplate.handlers.MouseHandler;
@@ -28,6 +30,7 @@ import com.joseph.gametemplate.interfaces.IDrawable;
 import com.joseph.gametemplate.interfaces.IUpdateable;
 import com.joseph.gametemplate.math.DPoint;
 import com.joseph.gametemplate.math.MathHelper;
+import com.joseph.gametemplate.math.physics.Vector;
 import com.joseph.gametemplate.reference.Reference;
 import com.joseph.gametemplate.reference.ScreenReference;
 import com.joseph.gametemplate.threads.RenderThread;
@@ -97,7 +100,7 @@ public class GameEngine {
 	/**
 	 * Instance of the mouse handler object
 	 */
-	private MouseHandler mouseHandlerInstace;
+	private static MouseHandler mouseHandlerInstace;
 
 	/**
 	 * ArrayList of GameObjects - to be looped over to update and draw
@@ -116,9 +119,12 @@ public class GameEngine {
 	private static ArrayList<IGuiElement> guiElements = new ArrayList<IGuiElement>();
 	private static ArrayList<Projectile> projectiles = new ArrayList<Projectile>();
 	private static ArrayList<TestTarget> targets = new ArrayList<TestTarget>();
+	private static ArrayList<Turret> team1Turrets = new ArrayList<Turret>();
+	private static ArrayList<Turret> team2Turrets = new ArrayList<Turret>();
 	
 	private static Queue<Projectile> waitingAddProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
 	private static Queue<Projectile> waitingRemoveProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
+	private static Queue<TestTarget> waitingAddTargets = new ArrayBlockingQueue<TestTarget>(500, true);
 	
 	private int updateCounter;
 	private int drawCounter;
@@ -194,7 +200,7 @@ public class GameEngine {
 		this.keyHandlerInstance = new GKELAH();
 		this.frame.addKeyListener(keyHandlerInstance);
 		
-		this.mouseHandlerInstace = new MouseHandler();
+		mouseHandlerInstace = new MouseHandler();
 		this.frame.addMouseListener(mouseHandlerInstace);
 
 		this.i = new BufferedImage(ScreenReference.WIDTH, ScreenReference.HEIGHT, BufferedImage.TYPE_INT_RGB);
@@ -204,6 +210,7 @@ public class GameEngine {
 		// Turn on AnitAliasing
 		this.g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		this.g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		this.g2.transform(AffineTransform.getScaleInstance(0.125, 0.125));
 		
 		this.frc = this.g2.getFontRenderContext();
 		
@@ -219,33 +226,58 @@ public class GameEngine {
 //		gameObjects.add(t);
 //		this.mouseHandlerInstace.registerMouseReliant(t);
 		
-		TestTarget tt = new TestTarget();
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
-		
-		tt = new TestTarget(300, 2000);
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
-		
-		tt = new TestTarget(1500, 1000);
-		gameObjects.add(tt);
-		targets.add(tt);
-		this.mouseHandlerInstace.registerWaypointListener(tt);
+//		TestTarget tt = new TestTarget();
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		mouseHandlerInstace.registerWaypointListener(tt);
+//		
+//		tt = new TestTarget(300, 2000);
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		mouseHandlerInstace.registerWaypointListener(tt);
+//		
+//		tt = new TestTarget(1500, 1000);
+//		gameObjects.add(tt);
+//		targets.add(tt);
+//		mouseHandlerInstace.registerWaypointListener(tt);
 		
 		Random r = new Random();
-		int num = r.nextInt(20) + 80;
-		for (int i = 0; i < num; i++) {
-			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
-			gameObjects.add(tt);
-			targets.add(tt);
-			this.mouseHandlerInstace.registerWaypointListener(tt);
-		}
+//		int num = r.nextInt(20) + 80;
+//		for (int i = 0; i < num; i++) {
+//			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
+//			gameObjects.add(tt);
+//			targets.add(tt);
+//			mouseHandlerInstace.registerWaypointListener(tt);
+//		}
 		
-		Ship s = new Ship(1000, 1000);
+		Ship s = new Ship(500, 500, new Color(27, 156, 255));
+		Turret[] turrets = s.getTurrets();
+		for (int i = 0; i < turrets.length; i++) {
+			team1Turrets.add(turrets[i]);
+		}
 		gameObjects.add(s);
-		this.mouseHandlerInstace.registerWaypointListener(s);
+		mouseHandlerInstace.registerWaypointListener(s);
+		
+		s = new Ship(500, 1500, new Color(27, 156, 255));
+		turrets = s.getTurrets();
+		for (int i = 0; i < turrets.length; i++) {
+			team1Turrets.add(turrets[i]);
+		}
+		gameObjects.add(s);
+		
+		s = new Ship(2500, 500, new Color(240, 70, 3));
+		turrets = s.getTurrets();
+		for (int i = 0; i < turrets.length; i++) {
+			team2Turrets.add(turrets[i]);
+		}
+		gameObjects.add(s);
+		
+		s = new Ship(2500, 1500, new Color(240, 70, 3));
+		turrets = s.getTurrets();
+		for (int i = 0; i < turrets.length; i++) {
+			team2Turrets.add(turrets[i]);
+		}
+		gameObjects.add(s);
 		
 		this.releaseFocous();
 		
@@ -260,11 +292,21 @@ public class GameEngine {
 	 *            update methods of each object)
 	 */
 	private void update(double deltaTime) {
-		long start = System.nanoTime();
+		for (TestTarget tt : waitingAddTargets) {
+			synchronized (gameObjects) {
+				gameObjects.add(tt);
+			}
+			targets.add(tt);
+			mouseHandlerInstace.registerWaypointListener(tt);
+			waitingAddTargets.remove();
+		}
+		
 		for (Projectile p : waitingAddProjectiles) {
 			try {
 				Projectile toAdd = p.clone();
-				projectiles.add(toAdd);
+				synchronized (projectiles) {
+					projectiles.add(toAdd);
+				}
 				waitingAddProjectiles.remove();
 			} catch (CloneNotSupportedException e) {
 				e.printStackTrace();
@@ -276,18 +318,28 @@ public class GameEngine {
 			if (!p.inGameMap()) {
 				waitingRemoveProjectiles.add(p);
 			} else {
-				for (int i = 0; i < targets.size(); ) {
-					if (targets.get(i).coliding(p)) {
-						gameObjects.remove(targets.remove(i));
-					} else {
-						i++;
-					}
+				for (int i = 0; i < team1Turrets.size(); i++) {
+					team1Turrets.get(i).coliding(p);
 				}
+				for (int i = 0; i < team2Turrets.size(); i++) {
+					team2Turrets.get(i).coliding(p);
+				}
+//				for (int i = 0; i < targets.size(); ) {
+//					if (targets.get(i).coliding(p)) {
+//						synchronized (gameObjects) {
+//							gameObjects.remove(targets.remove(i));
+//						}
+//					} else {
+//						i++;
+//					}
+//				}
 			}
 		}
 		
 		for (Projectile p : waitingRemoveProjectiles) {
-			projectiles.remove(p);
+			synchronized (projectiles) {
+				projectiles.remove(p);
+			}
 			waitingRemoveProjectiles.remove();
 		}
 		
@@ -302,10 +354,6 @@ public class GameEngine {
 		for (IGuiElement gui : guiElements) {
 			gui.updateUpdateableElements(deltaTime);
 		}
-		long stop = System.nanoTime();
-		updateCounter++;
-		System.out.println("update " + updateCounter + " took " + (stop - start) + " nano seconds with " 
-				+ (16666666.666 - (start - stop)) + " nano seconds to spare");
 	}
 
 	/**
@@ -319,14 +367,18 @@ public class GameEngine {
 	private void render(Graphics2D g, ImageObserver observer) {
 		long start = System.nanoTime();
 		g2.setColor(Color.BLACK);
-		g2.fillRect(0, 0, ScreenReference.WIDTH, ScreenReference.HEIGHT);
+		g2.fillRect(0, 0, ScreenReference.WIDTH * 8, ScreenReference.HEIGHT * 8);
 		
-		for (GameObject gameObject : gameObjects) {
-			gameObject.draw(g2, observer);
+		synchronized (gameObjects) {
+			for (GameObject gameObject : gameObjects) {
+				gameObject.draw(g2, observer);
+			}
 		}
 		
-		for (GameObject projectile : projectiles) {
-			projectile.draw(g2, observer);
+		synchronized (projectiles) {
+			for (GameObject projectile : projectiles) {
+				projectile.draw(g2, observer);
+			}
 		}
 
 		for (IDrawable iDrawable : drawable) {
@@ -352,8 +404,8 @@ public class GameEngine {
 		g.drawImage(this.i, 0, 0, this.frame);
 		long stop = System.nanoTime();
 		drawCounter++;
-		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds with " 
-				+ (16666666.666666666046 - (start - stop)) + "nano seconds to spare");
+//		System.out.println("draw " + drawCounter + " took " + (stop - start) + "nano seconds with " 
+//				+ (16666666.666 - (start - stop)) + "nano seconds to spare");
 	}
 
 	/**
@@ -389,8 +441,14 @@ public class GameEngine {
 
 			if (deltaTime >= 1) {
 				ticks++;
+				long start = System.nanoTime();
 				update(deltaTime);
+				long stop = System.nanoTime();
+				updateCounter++;
+//				System.out.println("update " + updateCounter + " took " + (stop - start) + " nano seconds with " 
+//						+ (16666666.666 - (start - stop)) + " nano seconds to spare");
 				deltaTime--;
+//				System.out.println(deltaTime);
 			}
 
 			synchronized (rlo) {
@@ -457,6 +515,22 @@ public class GameEngine {
 		return this.frc;
 	}
 	
+	public static void updateTargetVelocities(Vector v) {
+		for (TestTarget tt : targets) {
+			tt.setMovementVector(v);
+		}
+	}
+	
+	public static void populateNewTargets(Random r, int number) {
+		for (int i = 0; i < number; i++) {
+			TestTarget tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
+//			gameObjects.add(tt);
+//			targets.add(tt);
+//			mouseHandlerInstace.registerWaypointListener(tt);
+			waitingAddTargets.add(tt);
+		}
+	}
+	
 	public static void sapwnProjectile(Projectile p) {
 //		gameObjects.add(p);
 		waitingAddProjectiles.add(p);
@@ -477,6 +551,46 @@ public class GameEngine {
 			}
 		}
 		return closest;
+	}
+	
+	public static Turret getClosestEnemyTurret(Turret tur) {
+		if (team1Turrets.contains(tur)) {
+			if (team2Turrets.size() == 0) {
+				return null;
+			}
+			Turret closest = team2Turrets.get(0);
+			double closestDistance = MathHelper.getDistance(tur.getLocation(), closest.getLocation());
+			for (int i = 1; i < team2Turrets.size(); i++) {
+				Turret current = team2Turrets.get(i);
+				if (current.isDead()) {
+					continue;
+				}
+				double currentDistance = MathHelper.getDistance(tur.getLocation(), current.getLocation());
+				if (currentDistance < closestDistance) {
+					closestDistance = currentDistance;
+					closest = current;
+				}
+			}
+			return closest;
+		} else {
+			if (team1Turrets.size() == 0) {
+				return null;
+			}
+			Turret closest = team1Turrets.get(0);
+			double closestDistance = MathHelper.getDistance(tur.getLocation(), closest.getLocation());
+			for (int i = 1; i < team1Turrets.size(); i++) {
+				Turret current = team1Turrets.get(i);
+				if (current.isDead()) {
+					continue;
+				}
+				double currentDistance = MathHelper.getDistance(tur.getLocation(), current.getLocation());
+				if (currentDistance < closestDistance) {
+					closestDistance = currentDistance;
+					closest = current;
+				}
+			}
+			return closest;
+		}
 	}
 }
 /*

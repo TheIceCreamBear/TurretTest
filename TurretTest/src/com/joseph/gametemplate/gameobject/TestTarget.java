@@ -38,9 +38,9 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	@Override
 	public void update(double deltaTime) {
 		if ((int) Math.round(this.x) == (int) waypoint.getX() && (int) Math.round(this.y) == (int) waypoint.getY()) {
-			this.movementVector = new Vector(0, 0);
+//			this.movementVector = new Vector(0, 0);
 		} else {
-			this.movementVector = new Vector(1, MathHelper.getAngleRad(x, y, waypoint));
+//			this.movementVector = new Vector(1, MathHelper.getAngleRad(x, y, waypoint));
 		}
 		this.x += movementVector.getI();
 		this.y += movementVector.getJ();
@@ -59,5 +59,9 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	public boolean coliding(Projectile p) {
 		Rectangle2D r = new Rectangle2D.Double(this.x - (width / 2), this.y - (height / 2), width, height);
 		return r.contains(p.getX(), p.getY());
+	}
+	
+	public void setMovementVector(Vector movementVector) {
+		this.movementVector = movementVector;
 	}
 }
