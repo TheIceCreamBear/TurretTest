@@ -125,6 +125,8 @@ public class GameEngine {
 	private static Queue<Projectile> waitingAddProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
 	private static Queue<Projectile> waitingRemoveProjectiles = new ArrayBlockingQueue<Projectile>(50, true);
 	private static Queue<TestTarget> waitingAddTargets = new ArrayBlockingQueue<TestTarget>(500, true);
+	private static Queue<Turret> waitingRemoveTurrets1 = new ArrayBlockingQueue<Turret>(50, true);
+	private static Queue<Turret> waitingRemoveTurrets2 = new ArrayBlockingQueue<Turret>(50, true);
 	
 	private int updateCounter;
 	private int drawCounter;
@@ -210,13 +212,14 @@ public class GameEngine {
 		// Turn on AnitAliasing
 		this.g2.setRenderingHint(RenderingHints.KEY_TEXT_ANTIALIASING, RenderingHints.VALUE_TEXT_ANTIALIAS_ON);
 		this.g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		this.g2.transform(AffineTransform.getScaleInstance(0.125, 0.125));
+		this.g2.transform(AffineTransform.getScaleInstance(.5, .5));
+//		this.g2.transform(AffineTransform.getScaleInstance(0.125, 0.125));
 		
 		this.frc = this.g2.getFontRenderContext();
 		
-//		Turret t = new Turret();
-//		gameObjects.add(t);
-//		this.mouseHandlerInstace.registerMouseReliant(t);
+		Turret t = new Turret();
+		gameObjects.add(t);
+		mouseHandlerInstace.registerMouseReliant(t);
 		
 //		t = new Turret(100, 100);
 //		gameObjects.add(t);
@@ -226,53 +229,55 @@ public class GameEngine {
 //		gameObjects.add(t);
 //		this.mouseHandlerInstace.registerMouseReliant(t);
 		
-//		TestTarget tt = new TestTarget();
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		mouseHandlerInstace.registerWaypointListener(tt);
-//		
-//		tt = new TestTarget(300, 2000);
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		mouseHandlerInstace.registerWaypointListener(tt);
-//		
-//		tt = new TestTarget(1500, 1000);
-//		gameObjects.add(tt);
-//		targets.add(tt);
-//		mouseHandlerInstace.registerWaypointListener(tt);
+		TestTarget tt = new TestTarget();
+		gameObjects.add(tt);
+		targets.add(tt);
+		mouseHandlerInstace.registerWaypointListener(tt);
+		
+		tt = new TestTarget(300, 2000);
+		gameObjects.add(tt);
+		targets.add(tt);
+		mouseHandlerInstace.registerWaypointListener(tt);
+		
+		tt = new TestTarget(1500, 1000);
+		gameObjects.add(tt);
+		targets.add(tt);
+		mouseHandlerInstace.registerWaypointListener(tt);
 		
 		Random r = new Random();
-//		int num = r.nextInt(20) + 80;
-//		for (int i = 0; i < num; i++) {
-//			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
-//			gameObjects.add(tt);
-//			targets.add(tt);
-//			mouseHandlerInstace.registerWaypointListener(tt);
-//		}
+		int num = r.nextInt(20) + 80;
+		for (int i = 0; i < num; i++) {
+			tt = new TestTarget(r.nextInt(ScreenReference.WIDTH), r.nextInt(ScreenReference.HEIGHT));
+			gameObjects.add(tt);
+			targets.add(tt);
+			mouseHandlerInstace.registerWaypointListener(tt);
+		}
 		
-		Ship s = new Ship(500, 500, new Color(27, 156, 255));
+		Ship s = new Ship(500, 500, new Color(27, 156, 255), 0);
 		Turret[] turrets = s.getTurrets();
 		for (int i = 0; i < turrets.length; i++) {
 			team1Turrets.add(turrets[i]);
 		}
+		s.registerTurrets(mouseHandlerInstace);
 		gameObjects.add(s);
 		mouseHandlerInstace.registerWaypointListener(s);
 		
-		s = new Ship(500, 1500, new Color(27, 156, 255));
+		s = new Ship(500, 1500, new Color(27, 156, 255), -6);
 		turrets = s.getTurrets();
 		for (int i = 0; i < turrets.length; i++) {
 			team1Turrets.add(turrets[i]);
 		}
 		gameObjects.add(s);
 		
-		s = new Ship(2500, 500, new Color(240, 70, 3));
+		s = new Ship(2500, 500, new Color(240, 70, 3), 6);
 		turrets = s.getTurrets();
 		for (int i = 0; i < turrets.length; i++) {
 			team2Turrets.add(turrets[i]);
 		}
 		gameObjects.add(s);
+		s.registerTurrets(mouseHandlerInstace);
 		
-		s = new Ship(2500, 1500, new Color(240, 70, 3));
+		s = new Ship(2500, 1500, new Color(240, 70, 3), -6);
 		turrets = s.getTurrets();
 		for (int i = 0; i < turrets.length; i++) {
 			team2Turrets.add(turrets[i]);
@@ -292,6 +297,7 @@ public class GameEngine {
 	 *            update methods of each object)
 	 */
 	private void update(double deltaTime) {
+		long start = System.nanoTime();
 		for (TestTarget tt : waitingAddTargets) {
 			synchronized (gameObjects) {
 				gameObjects.add(tt);
@@ -319,20 +325,36 @@ public class GameEngine {
 				waitingRemoveProjectiles.add(p);
 			} else {
 				for (int i = 0; i < team1Turrets.size(); i++) {
-					team1Turrets.get(i).coliding(p);
+					if (team1Turrets.get(i).coliding(p) && !waitingRemoveTurrets1.contains(team1Turrets.get(i))) {
+						waitingRemoveTurrets1.add(team1Turrets.get(i));
+					}
 				}
 				for (int i = 0; i < team2Turrets.size(); i++) {
-					team2Turrets.get(i).coliding(p);
+					if (team2Turrets.get(i).coliding(p) && !waitingRemoveTurrets2.contains(team2Turrets.get(i))) {
+						waitingRemoveTurrets2.add(team2Turrets.get(i));
+					}
 				}
-//				for (int i = 0; i < targets.size(); ) {
-//					if (targets.get(i).coliding(p)) {
-//						synchronized (gameObjects) {
-//							gameObjects.remove(targets.remove(i));
-//						}
-//					} else {
-//						i++;
-//					}
-//				}
+				for (int i = 0; i < targets.size(); ) {
+					if (targets.get(i).coliding(p)) {
+						synchronized (gameObjects) {
+							gameObjects.remove(targets.remove(i));
+						}
+					} else {
+						i++;
+					}
+				}
+			}
+		}
+		
+		for (Turret turret : waitingRemoveTurrets1) {
+			synchronized (team1Turrets) {
+				team1Turrets.remove(turret);
+			}
+		}
+		
+		for (Turret turret : waitingRemoveTurrets2) {
+			synchronized (team2Turrets) {
+				team2Turrets.remove(turret);
 			}
 		}
 		
@@ -354,6 +376,8 @@ public class GameEngine {
 		for (IGuiElement gui : guiElements) {
 			gui.updateUpdateableElements(deltaTime);
 		}
+		long end = System.nanoTime();
+		System.err.println("Update: " + (end - start));
 	}
 
 	/**
@@ -556,7 +580,7 @@ public class GameEngine {
 	public static Turret getClosestEnemyTurret(Turret tur) {
 		if (team1Turrets.contains(tur)) {
 			if (team2Turrets.size() == 0) {
-				return null;
+				return tur;
 			}
 			Turret closest = team2Turrets.get(0);
 			double closestDistance = MathHelper.getDistance(tur.getLocation(), closest.getLocation());
@@ -574,7 +598,7 @@ public class GameEngine {
 			return closest;
 		} else {
 			if (team1Turrets.size() == 0) {
-				return null;
+				return tur;
 			}
 			Turret closest = team1Turrets.get(0);
 			double closestDistance = MathHelper.getDistance(tur.getLocation(), closest.getLocation());

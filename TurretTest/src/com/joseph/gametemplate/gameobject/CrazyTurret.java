@@ -114,7 +114,7 @@ public class CrazyTurret extends GameObject implements IMouseReliant {
 		this.rotatePoints();
 		this.visualFiringVector = new Vector(3000, Math.toRadians(degrees));
 		
-		this.fire();
+//		this.fire();
 	}
 	
 	@Override

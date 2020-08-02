@@ -10,7 +10,7 @@ import com.joseph.gametemplate.math.physics.Vector;
 import com.joseph.gametemplate.reference.ScreenReference;
 
 public class Projectile extends GameObject implements Cloneable {
-	public static final int PROJECTILE_MAGNITUDE = 5;
+	public static final int PROJECTILE_MAGNITUDE = 50;
 	private Vector v;
 	private Turret firedFrom;
 	

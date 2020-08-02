@@ -57,8 +57,14 @@ public class TestTarget extends GameObject implements IWaypointListener {
 	}
 	
 	public boolean coliding(Projectile p) {
-		Rectangle2D r = new Rectangle2D.Double(this.x - (width / 2), this.y - (height / 2), width, height);
-		return r.contains(p.getX(), p.getY());
+		Rectangle2D thisBou = new Rectangle2D.Double(this.x - (width / 2), this.y - (height / 2), width, height);
+		Rectangle2D pBou = p.getBounds();
+		boolean colliding = thisBou.getX() < (pBou.getX() + pBou.getWidth()) && (thisBou.getX() + thisBou.getWidth()) > pBou.getX() 
+				&& thisBou.getY() < (pBou.getY() + pBou.getHeight()) && (thisBou.getY() + thisBou.getHeight()) > pBou.getY();
+//		System.err.println(thisBou);
+//		System.err.println(pBou);
+//		System.err.println(colliding);
+		return colliding;
 	}
 	
 	public void setMovementVector(Vector movementVector) {

@@ -7,6 +7,7 @@ import java.awt.Polygon;
 import java.awt.geom.AffineTransform;
 import java.awt.image.ImageObserver;
 
+import com.joseph.gametemplate.handlers.MouseHandler;
 import com.joseph.gametemplate.interfaces.IWaypointListener;
 import com.joseph.gametemplate.math.DPoint;
 import com.joseph.gametemplate.math.MathHelper;
@@ -35,7 +36,7 @@ public class Ship extends GameObject implements IWaypointListener {
 	private double facingDegrees;
 	private double waypointDegrees;
 	
-	public Ship(double x, double y, Color c) {
+	public Ship(double x, double y, Color c, int id) {
 		super(x, y);
 		this.shapePoints = new Point[shape.npoints];
 		this.drawPoints = new Point[shapePoints.length];
@@ -46,12 +47,12 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.movementVector = new Vector(0, 0);
 		this.accelerationVector = new Vector(0, 0);
 		this.waypoint = new DPoint(x, y);
-		this.portTurret = new Turret(x - 100, y + 100, c);
-		this.starbordTurret = new Turret(x + 100, y + 100, c);
-		this.portTurret1 = new Turret(x - 150, y + 200, c);
-		this.starbordTurret1 = new Turret(x + 150, y + 200, c);
-		this.portTurret2 = new Turret(x - 200, y + 300, c);
-		this.starbordTurret2 = new Turret(x + 200, y + 300, c);
+		this.portTurret = new Turret(x - 100, y + 100, c, id);
+		this.starbordTurret = new Turret(x + 100, y + 100, c, id+ 1);
+		this.portTurret1 = new Turret(x - 150, y + 200, c, id+ 2);
+		this.starbordTurret1 = new Turret(x + 150, y + 200, c, id+ 3);
+		this.portTurret2 = new Turret(x - 200, y + 300, c, id+ 4);
+		this.starbordTurret2 = new Turret(x + 200, y + 300, c, id+ 5);
 		this.ct = new CrazyTurret(x, y);
 		this.c = c;
 	}
@@ -81,7 +82,7 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.starbordTurret1.draw(g, observer);
 		this.portTurret2.draw(g, observer);
 		this.starbordTurret2.draw(g, observer);
-//		this.ct.draw(g, observer);
+		this.ct.draw(g, observer);
 	}
 	
 	@Override
@@ -147,7 +148,7 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.starbordTurret1.setMovementVector(movementVector);
 		this.portTurret2.setMovementVector(movementVector);
 		this.starbordTurret2.setMovementVector(movementVector);
-//		this.ct.setMovementVector(movementVector);
+		this.ct.setMovementVector(movementVector);
 		
 		this.portTurret.update(deltaTime);
 		this.starbordTurret.update(deltaTime);
@@ -155,7 +156,7 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.starbordTurret1.update(deltaTime);
 		this.portTurret2.update(deltaTime);
 		this.starbordTurret2.update(deltaTime);
-//		this.ct.update(deltaTime);
+		this.ct.update(deltaTime);
 	}
 	
 	private void checkValidVector(Vector v) {
@@ -173,6 +174,15 @@ public class Ship extends GameObject implements IWaypointListener {
 	
 	public Turret[] getTurrets() {
 		return new Turret[] {portTurret, starbordTurret, portTurret1, starbordTurret1, portTurret2, starbordTurret2};
+	}
+	
+	public void registerTurrets(MouseHandler handler) {
+		handler.registerMouseReliant(portTurret);
+		handler.registerMouseReliant(portTurret1);
+		handler.registerMouseReliant(portTurret2);
+		handler.registerMouseReliant(starbordTurret);
+		handler.registerMouseReliant(starbordTurret1);
+		handler.registerMouseReliant(starbordTurret2);
 	}
 	
 	private boolean rotatePositive(double a, double b) {
@@ -205,9 +215,9 @@ public class Ship extends GameObject implements IWaypointListener {
 		this.portTurret2.setDrawPos(port2);
 		this.starbordTurret2.setDrawPos(star2);
 		
-//		DPoint ctp = ct.getLocation();
-//		turretRotate.transform(ctp, ctp);
-//		this.ct.setDrawPos(ctp);
+		DPoint ctp = ct.getLocation();
+		turretRotate.transform(ctp, ctp);
+		this.ct.setDrawPos(ctp);
 	}
 	
 	private Polygon makePoly(Point[] points) {

@@ -32,12 +32,13 @@ public class Turret extends GameObject implements IMouseReliant {
 	private int fireCounter;
 	private int burstLeft;
 	private boolean dead = false;
+	private int id;
 	
 	public Turret() {
-		this(1000, 1000, Color.WHITE);
+		this(1000, 1000, Color.WHITE, -1);
 	}
 	
-	public Turret(double x, double y, Color c) {
+	public Turret(double x, double y, Color c, int id) {
 		super(x, y);
 		this.shapePoints = new Point[shape.npoints];
 		this.drawPoints = new Point[shapePoints.length];
@@ -52,6 +53,7 @@ public class Turret extends GameObject implements IMouseReliant {
 		this.degrees = 0;
 		this.drawPos = this.getLocation();
 		this.c = c;
+		this.id = id;
 	}
 	
 	@Override
@@ -87,8 +89,12 @@ public class Turret extends GameObject implements IMouseReliant {
 			this.x += movementVector.getI();
 			this.y += movementVector.getJ();
 		}
-//		this.target = GameEngine.getClosestTarget(drawPos);
-		this.target = GameEngine.getClosestEnemyTurret(this);
+		
+		if (this.id == -1) {
+			this.target = GameEngine.getClosestTarget(drawPos);
+		} else {
+			this.target = GameEngine.getClosestEnemyTurret(this);			
+		}
 		
 		if (this.target != null && this.target instanceof TestTarget) {
 			TestTarget tt = (TestTarget) this.target;
@@ -161,6 +167,15 @@ public class Turret extends GameObject implements IMouseReliant {
 	
 	@Override
 	public boolean onMouseEvent(MouseEvent e) {
+		if (dead) {
+			return false;
+		}
+		System.err.println("--------------------id=" + this.id + "--------------------");
+		System.err.println(new DPoint(x, y));
+		System.err.println(drawPos);
+		System.err.println(this.target.getLocation());
+		System.err.println(((Turret) (this.target)).id);
+		System.err.println("--------------------id=" + this.id + "--------------------");
 //		this.fire();
 		return false;
 	}
@@ -190,7 +205,7 @@ public class Turret extends GameObject implements IMouseReliant {
 		boolean col = thisBou.getX() < (pBou.getX() + pBou.getWidth()) && (thisBou.getX() + thisBou.getWidth()) > pBou.getX() 
 				&& thisBou.getY() < (pBou.getY() + pBou.getHeight()) && (thisBou.getY() + thisBou.getHeight()) > pBou.getY();
 		this.dead = col;
-		if (dead) System.err.println("dead");
+		if (dead) System.err.println("dead id=" + id);
 		return col;
 	}
 	
